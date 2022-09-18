@@ -8,6 +8,7 @@
 #include "Components/TextRenderComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Weapon/STUBaseWeapon.h"
 #include "STUBaseCharacter.generated.h"
 
 UCLASS()
@@ -46,6 +47,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	FVector2D LandedDamage = FVector2D(10.0f, 100.0f);
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<ASTUBaseWeapon> WeaponClass;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -74,4 +78,6 @@ private:
 
 	UFUNCTION()
 	void OnGroundLanded(const FHitResult& Hit);
+
+	void SpawnWeapon();
 };

@@ -16,6 +16,7 @@ ASTUBaseCharacter::ASTUBaseCharacter(const FObjectInitializer& ObjInit): Super(O
 	if (SpringArmComponent) {
 		SpringArmComponent->SetupAttachment(GetRootComponent());
 		SpringArmComponent->bUsePawnControlRotation = true;
+		SpringArmComponent->SocketOffset = FVector(0.0f, 100.0f, 80.0f);
 
 		CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 		if (CameraComponent) {
@@ -26,6 +27,7 @@ ASTUBaseCharacter::ASTUBaseCharacter(const FObjectInitializer& ObjInit): Super(O
 	HealthTextComponent = CreateDefaultSubobject<UTextRenderComponent>("HealthTextComponent");
 	if (HealthTextComponent) {
 		HealthTextComponent->SetupAttachment(GetRootComponent());
+		HealthTextComponent->SetOwnerNoSee(true);
 	}
 }
 
@@ -42,6 +44,8 @@ void ASTUBaseCharacter::BeginPlay() {
 	HealthComponent->OnHealthChanged.AddUObject(this, &ASTUBaseCharacter::OnHealthChanged);
 
 	LandedDelegate.AddDynamic(this, &ASTUBaseCharacter::OnGroundLanded);
+
+	SpawnWeapon();
 }
 
 // Called every frame
@@ -121,4 +125,14 @@ void ASTUBaseCharacter::OnGroundLanded(const FHitResult& Hit) {
 	const auto FinalDamage = FMath::GetMappedRangeValueClamped(LandedDamageVelocity, LandedDamage, FallVelocityZ);
 	UE_LOG(BaseCharacterLog, Display, TEXT("FinalDamage: %f"), FinalDamage);
 	TakeDamage(FinalDamage, FDamageEvent{}, nullptr, nullptr);
+}
+
+void ASTUBaseCharacter::SpawnWeapon() {
+	if (!GetWorld()) return;
+	
+	const auto Weapon = GetWorld()->SpawnActor<ASTUBaseWeapon>(WeaponClass);
+	if (Weapon) {
+		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, false);
+		Weapon->AttachToComponent(GetMesh(), AttachmentRules, "WeaponSocket");
+	}
 }
